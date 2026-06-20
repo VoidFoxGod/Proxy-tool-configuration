@@ -20,9 +20,17 @@ external-controller: 127.0.0.1:9090 # 外部控制 API 端口
 dns:
   enable: true
   ipv6: true                 # 开启 DNS AAAA 记录解析
-  enhanced-mode: redir-host  # 传统真实 IP 模式：先解析真实 IP，再匹配物理路由与规则
-  listen: 0.0.0.0:53
-  
+  enhanced-mode: fake-ip        # 核心技术：Fake-IP 模式 (立即返回虚假 IP 实现瞬时握手，由内核在后台异步分流)
+  fake-ip-range: 198.18.0.1/16  # 虚假本地 IP 分配池
+  listen: 0.0.0.0:53            # 本地 DNS 服务监听端口
+
+# 虚假 IP 过滤器：强制指定域名跳过 Fake-IP 分配，直接返回真实物理 IP
+  fake-ip-filter:
+    - '*.lan'                   # 局域网本地域名
+    - '*.local'                 # 苹果 Bonjour 等本地服务域名
+    - '+.msftconnecttest.com'   # 微软网络连通性探测 (防止误判离线)
+    - '+.msftncsi.com'          # 微软网络状态指示器
+    
   # 预解析：用于 bootstrap 启动以及解析本地/远程加密 DNS (DoH/DoT) 本身域名的基础服务器
   default-nameserver:
     - 223.5.5.5

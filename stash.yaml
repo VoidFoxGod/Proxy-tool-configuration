@@ -20,16 +20,8 @@ external-controller: 127.0.0.1:9090 # 外部控制 API 端口
 dns:
   enable: true
   ipv6: true                 # 开启 DNS AAAA 记录解析
-  enhanced-mode: fake-ip        # 核心技术：Fake-IP 模式 (立即返回虚假 IP 实现瞬时握手，由内核在后台异步分流)
-  fake-ip-range: 198.18.0.1/16  # 虚假本地 IP 分配池
-  listen: 0.0.0.0:53            # 本地 DNS 服务监听端口
-
-# 虚假 IP 过滤器：强制指定域名跳过 Fake-IP 分配，直接返回真实物理 IP
-  fake-ip-filter:
-    - '*.lan'                   # 局域网本地域名
-    - '*.local'                 # 苹果 Bonjour 等本地服务域名
-    - '+.msftconnecttest.com'   # 微软网络连通性探测 (防止误判离线)
-    - '+.msftncsi.com'          # 微软网络状态指示器
+  enhanced-mode: redir-host  # 传统真实 IP 模式：先解析真实 IP，再匹配物理路由与规则
+  listen: 0.0.0.0:53         # 本地 DNS 服务监听端口
     
   # 预解析：用于 bootstrap 启动以及解析本地/远程加密 DNS (DoH/DoT) 本身域名的基础服务器
   default-nameserver:
@@ -101,11 +93,11 @@ proxy-providers:
 # 4. 远程规则订阅集合 (Rule Providers - 自动感应云端更新)
 # ------------------------------------------------------------------------------
 rule-providers:
-  private:
+  proxy:
     type: http
-    behavior: domain          # 域名树匹配算法，针对大量域名的高性能低开销模式
-    url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/private.list"
-    path: ./rules/private.yaml
+    behavior: domain
+    url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/proxy.list"
+    path: ./rules/proxy.yaml
     interval: 86400
 
   adrules:
@@ -113,13 +105,6 @@ rule-providers:
     behavior: domain
     url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/adrules.list"
     path: ./rules/adrules.yaml
-    interval: 86400
-
-  proxy:
-    type: http
-    behavior: domain
-    url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/proxy.list"
-    path: ./rules/proxy.yaml
     interval: 86400
 
   cn:
@@ -134,6 +119,13 @@ rule-providers:
     behavior: ipcidr            # 纯 IP 路由网段匹配算法
     url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/cncidr.list"
     path: ./rules/cncidr.yaml
+    interval: 86400
+
+  private:
+    type: http
+    behavior: domain          # 域名树匹配算法，针对大量域名的高性能低开销模式
+    url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/private.list"
+    path: ./rules/private.yaml
     interval: 86400
 
 # ------------------------------------------------------------------------------
@@ -189,5 +181,7 @@ rules:
   - PROTOCOL,QUIC,REJECT                       # 拦截所有基于 UDP 的 QUIC 协议 (强迫客户端降级到 TCP 走代理，防止某些 ISP 严重阻断 UDP)
   
   - PROTOCOL,STUN,REJECT                       # 拦截 WebRTC 穿透嗅探协议 (防止因 NAT 探测导致浏览器在代理状态下意外泄露国内真实物理 IP)
+
+  - GEOIP,CN,ChinaRouter                       # 地理位置防线 (真实 IP 模式的终极护盾)，未被上述云端规则捕获的残留大陆本地流量，通过内核解析物理 IP 并进行底层地理位置匹配，强制并入 ChinaRouter 组
   
   - MATCH,Proxy                                # 全局漏网之鱼：对未命中任何规则的边缘流量进行安全兜底

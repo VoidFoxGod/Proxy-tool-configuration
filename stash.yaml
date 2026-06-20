@@ -165,24 +165,18 @@ proxy-groups:
 # 6. 分流路由规则 (Rules - 流量匹配第一触点)
 # ------------------------------------------------------------------------------
 rules:
-  # 1. 核心底层协议防泄露与性能拦截
+  - RULE-SET,proxy,Proxy                       # 国际通用代理与被墙网站分流控制
+  
+  - RULE-SET,adrules,REJECT                    # 广告、追踪及隐私窃取流量净化
+
+  - RULE-SET,cn,ChinaRouter                    # 大陆本土域名与直连列表分流控制
+    
+  - RULE-SET,cncidr,ChinaRouter                # 大陆本土物理 IP 路由段分流控制 (注意：真实 IP 模式下此处不加 no-resolve，以强制触发本地 DNS 解析)
+
+  - RULE-SET,private,DIRECT                    # 内网、局域网及私有服务控制
+  
   - PROTOCOL,QUIC,REJECT                       # 拦截所有基于 UDP 的 QUIC 协议 (强迫客户端降级到 TCP 走代理，防止某些 ISP 严重阻断 UDP)
+  
   - PROTOCOL,STUN,REJECT                       # 拦截 WebRTC 穿透嗅探协议 (防止因 NAT 探测导致浏览器在代理状态下意外泄露国内真实物理 IP)
   
-  # 2. 内网、局域网及私有服务控制
-  - RULE-SET,private,DIRECT
-  
-  # 3. 广告、追踪及隐私窃取流量净化
-  - RULE-SET,adrules,REJECT
-  
-  # 4. 国际通用代理与被墙网站分流控制
-  - RULE-SET,proxy,Proxy
-  
-  # 5. 大陆本土域名与直连列表分流控制
-  - RULE-SET,cn,ChinaRouter
-  
-  # 6. 大陆本土物理 IP 路由段分流控制 (注意：真实 IP 模式下此处不加 no-resolve，以强制触发本地 DNS 解析)
-  - RULE-SET,cncidr,ChinaRouter
-  
-  # 7. 全局漏网之鱼：对未命中任何规则的边缘流量进行安全兜底
-  - MATCH,Proxy
+  - MATCH,Proxy                                # 全局漏网之鱼：对未命中任何规则的边缘流量进行安全兜底

@@ -51,14 +51,17 @@ dns:
     ipcidr:
       - 240.0.0.0/4           # 过滤境外 DNS 常见的假 IP 污染段
       - 0.0.0.0/32
-
+      
+  # 跳过证书验证，解决部分兼容性问题 https://help.nextdns.io/t/g9hdkjz
+  skip-cert-verify: true
+  
 # ------------------------------------------------------------------------------
 # 3. 代理集线器 (Proxy Providers - 三订阅并行节点加载)
 # ------------------------------------------------------------------------------
 proxy-providers:
   fq:
     type: http
-    url: "https://sub.store/download/collection/fq?target=Stash"     # 👈 替换为您代理海外的主翻墙订阅链接
+    url: "http://sub.store/download/collection/fq?target=Stash"     # 👈 替换为您代理海外的主翻墙订阅链接
     interval: 86400
     path: ./providers/fq.yaml
     health-check:
@@ -68,7 +71,7 @@ proxy-providers:
 
   fq-ml:
     type: http
-    url: "https://sub.store/download/collection/cloudmusic?target=Stash"  # 👈 替换为您的国外免流/特定订阅链接
+    url: "http://sub.store/download/collection/cloudmusic?target=Stash"  # 👈 替换为您的国外免流/特定订阅链接
     interval: 86400
     path: ./providers/fq_ml.yaml
     health-check:
@@ -78,7 +81,7 @@ proxy-providers:
 
   cn-ml:
     type: http
-    url: "https://sub.store/download/collection/cloudmusic-cn?target=Stash"  # 👈 替换为您的国内免流/回国特定订阅链接
+    url: "http://sub.store/download/collection/cloudmusic-cn?target=Stash"  # 👈 替换为您的国内免流/回国特定订阅链接
     interval: 86400
     path: ./providers/cn_ml.yaml
     health-check:
@@ -132,27 +135,27 @@ proxy-groups:
   # 海外主控代理策略组 (挂载 fq 节点源，嵌套子策略 fq ml)
   - name: Proxy
     type: select
+    proxies:
+      - DIRECT
+      - fq ml
     use:
       - fq
-    proxies:
-      - fq ml
-      - DIRECT
 
   # 国外特定免流策略组 (挂载 fq-ml 节点源)
   - name: fq ml
     type: select
-    use:
-      - fq-ml
     proxies:
       - DIRECT
+    use:
+      - fq-ml
 
   # 国内特定免流策略组 (挂载 cn-ml 节点源)
   - name: cn ml
     type: select
-    use:
-      - cn-ml
     proxies:
       - DIRECT
+    use:
+      - cn-ml
 
   # 大陆本地流量路由控制组 (控制国内流量直连或内网免流切换)
   - name: ChinaRouter

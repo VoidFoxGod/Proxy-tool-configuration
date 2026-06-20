@@ -1,6 +1,6 @@
 # ==============================================================================
 # Stash 精简精细版生产配置文件 (高兼容性三订阅独立分流架构)
-# 核心特性：Redir-Host 模式 / 纯文本极简策略 / Protocol 协议级安全拦截 / 智能 Fallback
+# 核心特性：Fake-IP 模式 / 纯文本极简策略 / Protocol 协议级安全拦截 / 智能 Fallback
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
@@ -311,20 +311,20 @@ proxy-groups:
 # 6. 分流路由规则 (Rules - 流量匹配第一触点)
 # ------------------------------------------------------------------------------
 rules:
-  - RULE-SET,proxy,Proxy                       # 国际通用代理与被墙网站分流控制
+  - RULE-SET,private,DIRECT                    # 内网、局域网及私有服务控制
   
   - RULE-SET,adrules,REJECT                    # 广告、追踪及隐私窃取流量净化
-
-  - RULE-SET,cn,ChinaRouter                    # 大陆本土域名与直连列表分流控制
-    
-  - RULE-SET,cncidr,ChinaRouter                # 大陆本土物理 IP 路由段分流控制 (注意：真实 IP 模式下此处不加 no-resolve，以强制触发本地 DNS 解析)
-
-  - RULE-SET,private,DIRECT                    # 内网、局域网及私有服务控制
   
   - PROTOCOL,QUIC,REJECT                       # 拦截所有基于 UDP 的 QUIC 协议 (强迫客户端降级到 TCP 走代理，防止某些 ISP 严重阻断 UDP)
   
   - PROTOCOL,STUN,REJECT                       # 拦截 WebRTC 穿透嗅探协议 (防止因 NAT 探测导致浏览器在代理状态下意外泄露国内真实物理 IP)
 
-#  - GEOIP,CN,ChinaRouter                       # 地理位置防线 (真实 IP 模式的终极护盾)，未被上述云端规则捕获的残留大陆本地流量，通过内核解析物理 IP 并进行底层地理位置匹配，强制并入 ChinaRouter 组
+  - RULE-SET,proxy,Proxy                       # 国际通用代理与被墙网站分流控制
+
+  - RULE-SET,cn,ChinaRouter                    # 大陆本土域名与直连列表分流控制
+    
+  - RULE-SET,cncidr,ChinaRouter,no-resolve     # 大陆本土物理 IP 路由段分流控制，添加 no-resolve 以避免触发 DNS 解析。
+
+#  - GEOIP,CN,ChinaRouter                      # 地理位置防线 (真实 IP 模式的终极护盾)，未被上述云端规则捕获的残留大陆本地流量，通过内核解析物理 IP 并进行底层地理位置匹配，强制并入 ChinaRouter 组
   
   - MATCH,Proxy                                # 全局漏网之鱼：对未命中任何规则的边缘流量进行安全兜底

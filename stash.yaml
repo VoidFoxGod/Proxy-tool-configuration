@@ -239,30 +239,35 @@ rule-providers:
   proxy:
     type: http
     behavior: domain          # 使用 domain 类规则集，可以使匹配更高效
+    format: text              # 使用 text 格式的规则集
     url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/proxy.list"
     interval: 86400
 
   adrules:
     type: http
     behavior: domain
+    format: text
     url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/domain/adrules.list"
     interval: 86400
 
   cn:
     type: http
     behavior: domain
+    format: text
     url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/cn.list"
     interval: 86400
 
   cncidr:
     type: http
     behavior: ipcidr            # 纯 IP 路由网段匹配算法
+    format: text
     url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/cncidr.list"
     interval: 86400
 
   private:
     type: http
     behavior: domain
+    format: text
     url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/private.list"
     interval: 86400
 
@@ -287,6 +292,13 @@ proxy-groups:
     use:
       - fq-ml
 
+  # 大陆本地流量路由控制组 (控制国内流量直连或内网免流切换)
+  - name: ChinaRouter
+    type: select
+    proxies:
+      - DIRECT
+      - cn ml
+  
   # 国内特定免流策略组 (挂载 cn-ml 节点源)
   - name: cn ml
     type: select
@@ -294,13 +306,6 @@ proxy-groups:
       - DIRECT
     use:
       - cn-ml
-
-  # 大陆本地流量路由控制组 (控制国内流量直连或内网免流切换)
-  - name: ChinaRouter
-    type: select
-    proxies:
-      - DIRECT
-      - cn ml
 
 # ------------------------------------------------------------------------------
 # 6. 分流路由规则 (Rules - 流量匹配第一触点)

@@ -1,0 +1,188 @@
+# ==============================================================================
+# Stash 精简精细版生产配置文件 (高兼容性三订阅独立分流架构)
+# 核心特性：Redir-Host 模式 / 纯文本极简策略 / Protocol 协议级安全拦截 / 智能 Fallback
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. 全局系统基础设置 (System Settings)
+# ------------------------------------------------------------------------------
+mixed-port: 7890             # 混合代理端口 (HTTP/SOCKS5 共用)
+allow-lan: true              # 允许局域网设备连接
+bind-address: '*'            # 局域网监听地址绑定
+mode: rule                   # 运行模式：规则分流 (Rule)
+log-level: info              # 日志输出级别
+ipv6: true                   # 全局开启 IPv6 流量接管与路由
+external-controller: 127.0.0.1:9090 # 外部控制 API 端口
+
+# ------------------------------------------------------------------------------
+# 2. 传统 DNS 体系配置 (Redir-Host 真实 IP 模式 + Fallback 扩展)
+# ------------------------------------------------------------------------------
+dns:
+  enable: true
+  ipv6: true                 # 开启 DNS AAAA 记录解析
+  enhanced-mode: redir-host  # 传统真实 IP 模式：先解析真实 IP，再匹配物理路由与规则
+  listen: 0.0.0.0:53
+  
+  # 预解析：用于 bootstrap 启动以及解析本地/远程加密 DNS (DoH/DoT) 本身域名的基础服务器
+  default-nameserver:
+    - 223.5.5.5
+    - 52.80.66.66
+    - 2400:3200::1
+    - 2400:7fc0:849e:200::4
+    - 8.8.8.8
+    - 208.67.222.222
+    - 2001:4860:4860::8888
+    - 2620:119:35::35
+    
+  # 国内解析：专用于直连流量与中国大陆域名的低延迟加密查询 (DoH)
+  nameserver:
+    - https://dns.alicdn.com/dns-query
+    - https://doh.onedns.net/dns-query
+    
+  # 海外解析：专用于代理/海外域名的无污染全加密安全查询 (DoH)
+  fallback:
+    - https://dns.google/dns-query
+    - https://doh.opendns.com/dns-query
+    
+  # 拦截与重定向机制：防止国内 DNS 污染的核心屏障
+  fallback-filter:
+    geoip: true
+    geoip-code: CN            # 过滤逻辑：若 nameserver 解析回来的 IP 不在中国大陆，则强制抛弃，改用 fallback 解析结果
+    ipcidr:
+      - 240.0.0.0/4           # 过滤境外 DNS 常见的假 IP 污染段
+      - 0.0.0.0/32
+
+# ------------------------------------------------------------------------------
+# 3. 代理集线器 (Proxy Providers - 三订阅并行节点加载)
+# ------------------------------------------------------------------------------
+proxy-providers:
+  fq:
+    type: http
+    url: "https://sub.store/download/collection/fq?target=Stash"     # 👈 替换为您代理海外的主翻墙订阅链接
+    interval: 86400
+    path: ./providers/fq.yaml
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 600
+
+  fq-ml:
+    type: http
+    url: "https://sub.store/download/collection/cloudmusic?target=Stash"  # 👈 替换为您的国外免流/特定订阅链接
+    interval: 86400
+    path: ./providers/fq_ml.yaml
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 600
+
+  cn-ml:
+    type: http
+    url: "https://sub.store/download/collection/cloudmusic-cn?target=Stash"  # 👈 替换为您的国内免流/回国特定订阅链接
+    interval: 86400
+    path: ./providers/cn_ml.yaml
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 600
+
+# ------------------------------------------------------------------------------
+# 4. 远程规则订阅集合 (Rule Providers - 自动感应云端更新)
+# ------------------------------------------------------------------------------
+rule-providers:
+  private:
+    type: http
+    behavior: domain          # 域名树匹配算法，针对大量域名的高性能低开销模式
+    url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/private.list"
+    path: ./rules/private.yaml
+    interval: 86400
+
+  adrules:
+    type: http
+    behavior: domain
+    url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/adrules.list"
+    path: ./rules/adrules.yaml
+    interval: 86400
+
+  proxy:
+    type: http
+    behavior: domain
+    url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/proxy.list"
+    path: ./rules/proxy.yaml
+    interval: 86400
+
+  cn:
+    type: http
+    behavior: domain
+    url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/cn.list"
+    path: ./rules/cn.yaml
+    interval: 86400
+
+  cncidr:
+    type: http
+    behavior: ipcidr            # 纯 IP 路由网段匹配算法
+    url: "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/stash/cncidr.list"
+    path: ./rules/cncidr.yaml
+    interval: 86400
+
+# ------------------------------------------------------------------------------
+# 5. 策略组配置 (Proxy Groups - 纯文本、高鲁棒性容器结构)
+# ------------------------------------------------------------------------------
+proxy-groups:
+  # 海外主控代理策略组 (挂载 fq 节点源，嵌套子策略 fq ml)
+  - name: Proxy
+    type: select
+    use:
+      - fq
+    proxies:
+      - fq ml
+      - DIRECT
+
+  # 国外特定免流策略组 (挂载 fq-ml 节点源)
+  - name: fq ml
+    type: select
+    use:
+      - fq-ml
+    proxies:
+      - DIRECT
+
+  # 国内特定免流策略组 (挂载 cn-ml 节点源)
+  - name: cn ml
+    type: select
+    use:
+      - cn-ml
+    proxies:
+      - DIRECT
+
+  # 大陆本地流量路由控制组 (控制国内流量直连或内网免流切换)
+  - name: ChinaRouter
+    type: select
+    proxies:
+      - DIRECT
+      - cn ml
+
+# ------------------------------------------------------------------------------
+# 6. 分流路由规则 (Rules - 流量匹配第一触点)
+# ------------------------------------------------------------------------------
+rules:
+  # 1. 核心底层协议防泄露与性能拦截
+  - PROTOCOL,QUIC,REJECT                       # 拦截所有基于 UDP 的 QUIC 协议 (强迫客户端降级到 TCP 走代理，防止某些 ISP 严重阻断 UDP)
+  - PROTOCOL,STUN,REJECT                       # 拦截 WebRTC 穿透嗅探协议 (防止因 NAT 探测导致浏览器在代理状态下意外泄露国内真实物理 IP)
+  
+  # 2. 内网、局域网及私有服务控制
+  - RULE-SET,private,DIRECT
+  
+  # 3. 广告、追踪及隐私窃取流量净化
+  - RULE-SET,adrules,REJECT
+  
+  # 4. 国际通用代理与被墙网站分流控制
+  - RULE-SET,proxy,Proxy
+  
+  # 5. 大陆本土域名与直连列表分流控制
+  - RULE-SET,cn,ChinaRouter
+  
+  # 6. 大陆本土物理 IP 路由段分流控制 (注意：真实 IP 模式下此处不加 no-resolve，以强制触发本地 DNS 解析)
+  - RULE-SET,cncidr,ChinaRouter
+  
+  # 7. 全局漏网之鱼：对未命中任何规则的边缘流量进行安全兜底
+  - MATCH,Proxy

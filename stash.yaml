@@ -323,7 +323,7 @@ rules:
 
   - RULE-SET,cn,ChinaRouter                    # 大陆本土域名与直连列表分流控制
     
-  - RULE-SET,cncidr,ChinaRouter                # 大陆本土物理 IP 路由段分流控制
+  - RULE-SET,cncidr,ChinaRouter,no-resolve     # 大陆本土物理 IP 路由段分流控制,添加 no-resolve 以避免触发 DNS 解析。
   
 #  - GEOIP,CN,ChinaRouter                      # 地理位置防线 (真实 IP 模式的终极护盾)，未被上述云端规则捕获的残留大陆本地流量，通过内核解析物理 IP 并进行底层地理位置匹配，强制并入 ChinaRouter 组
   

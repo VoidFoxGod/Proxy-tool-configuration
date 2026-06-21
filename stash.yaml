@@ -23,6 +23,7 @@ dns:
   enhanced-mode: fake-ip        # 核心技术：Fake-IP 模式 (本地直接返回虚假 IP，海外域名通过代理隧道加密至远端解析，底层杜绝 DNS 泄露)
   fake-ip-range: 198.18.0.1/16  # 虚假本地 IP 分配池
   listen: 0.0.0.0:53            # 本地 DNS 服务监听端口
+  follow-rule: true             # 开启后，DNS 流量将遵循规则集和策略组
 
   # 虚假 IP 过滤器：强制指定域名跳过 Fake-IP 分配，直接返回真实物理 IP
   fake-ip-filter:
@@ -186,7 +187,16 @@ dns:
   fallback:
     - https://dns.google/dns-query
     - https://doh.opendns.com/dns-query
-    
+
+   # 对部分域名使用单独的 DNS 服务器
+  nameserver-policy:
+    '*.example.com':
+      - https://dns.alidns.com/dns-query
+      - https://doh.onedns.net/dns-query
+    'geosite:cn':
+      - https://dns.alidns.com/dns-query
+      - https://doh.onedns.net/dns-query
+      
   # 拦截与重定向机制：防止国内 DNS 污染的核心屏障
   fallback-filter:
     geoip: true
@@ -194,10 +204,7 @@ dns:
     ipcidr:
       - 240.0.0.0/4           # 过滤境外 DNS 常见的假 IP 污染段
       - 0.0.0.0/32
-      
-  # 跳过证书验证，解决部分兼容性问题 https://help.nextdns.io/t/g9hdkjz
-    skip-cert-verify: true
-  
+
 # ------------------------------------------------------------------------------
 # 3. 代理集线器 (Proxy Providers - 三订阅并行节点加载)
 # ------------------------------------------------------------------------------
@@ -323,8 +330,8 @@ rules:
 
   - RULE-SET,cn,ChinaRouter                    # 大陆本土域名与直连列表分流控制
     
-  - RULE-SET,cncidr,ChinaRouter,no-resolve     # 大陆本土物理 IP 路由段分流控制,添加 no-resolve 以避免触发 DNS 解析。
+  - RULE-SET,cncidr,ChinaRouter #,no-resolve     # 大陆本土物理 IP 路由段分流控制,添加 no-resolve 以避免触发 DNS 解析。
   
-  - GEOIP,CN,ChinaRouter                       # 地理位置防线 (真实 IP 模式的终极护盾)，未被上述云端规则捕获的残留大陆本地流量，通过内核解析物理 IP 并进行底层地理位置匹配，强制并入 ChinaRouter 组
+#  - GEOIP,CN,ChinaRouter                       # 地理位置防线 (真实 IP 模式的终极护盾)，未被上述云端规则捕获的残留大陆本地流量，通过内核解析物理 IP 并进行底层地理位置匹配，强制并入 ChinaRouter 组
   
   - MATCH,Proxy                                # 全局漏网之鱼：对未命中任何规则的边缘流量进行安全兜底

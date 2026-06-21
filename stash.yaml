@@ -179,16 +179,11 @@ dns:
     - 2620:119:35::35
     
   # 国内解析：专用于直连流量与中国大陆域名的低延迟加密查询 (DoH)
-  nameserver:
-    - https://dns.alicdn.com/dns-query
-    - https://doh.onedns.net/dns-query
-    
-  # 海外解析：专用于代理/海外域名的无污染全加密安全查询 (DoH)
-  fallback:
-    - https://dns.google/dns-query
-    - https://doh.opendns.com/dns-query
+  #nameserver:
+  #  - https://dns.alicdn.com/dns-query
+  #  - https://doh.onedns.net/dns-query
 
-   # 对部分域名使用单独的 DNS 服务器
+  # 对部分域名使用单独的 DNS 服务器
   nameserver-policy:
     '*.example.com':
       - https://dns.alidns.com/dns-query
@@ -196,6 +191,11 @@ dns:
     'geosite:cn':
       - https://dns.alidns.com/dns-query
       - https://doh.onedns.net/dns-query
+      
+  # 海外解析：专用于代理/海外域名的无污染全加密安全查询 (DoH)
+  fallback:
+    - https://dns.google/dns-query
+    - https://doh.opendns.com/dns-query
       
   # 拦截与重定向机制：防止国内 DNS 污染的核心屏障
   fallback-filter:

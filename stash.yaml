@@ -185,9 +185,6 @@ dns:
 
   # 对部分域名使用单独的 DNS 服务器
   nameserver-policy:
-    '*.example.com':
-      - https://dns.alidns.com/dns-query
-      - https://doh.onedns.net/dns-query
     'geosite:cn':
       - https://dns.alidns.com/dns-query
       - https://doh.onedns.net/dns-query

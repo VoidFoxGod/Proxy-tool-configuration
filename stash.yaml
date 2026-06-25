@@ -181,6 +181,11 @@ dns:
     - 2001:4860:4860::8888
     - 2620:119:35::35
     
+  #代理节点域名解析服务器，仅用于解析代理节点的域名，如果不填则遵循 nameserver-policy、nameserver 和 fallback 的配置
+  proxy-server-nameserver:
+    - https://dns.alicdn.com/dns-query
+    - https://doh.onedns.net/dns-query
+    
   # 国内解析：专用于直连流量与中国大陆域名的低延迟加密查询 (DoH)
   nameserver:
     - https://dns.alicdn.com/dns-query

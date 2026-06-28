@@ -52,7 +52,7 @@ tun:                                                         # 配置：TUN 核�
   inet6-route-address: [ '2000::/3' ]                        # 仅让公网 IPv6通过 TUN，避免 IPv6 泄漏，同时保留本地 IPv6 直连
 
 hosts:
-  'dns.alidns.com'：               # 🇨🇳 阿里 DNS
+  'dns.alidns.com':               # 🇨🇳 阿里 DNS
     - 223.5.5.5
     - 223.6.6.6
     - 2400:3200::1

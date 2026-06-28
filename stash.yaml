@@ -237,12 +237,12 @@ dns:
     
   #代理节点域名解析服务器，仅用于解析代理节点的域名，如果不填则遵循 nameserver-policy、nameserver 和 fallback 的配置
   proxy-server-nameserver:
-    - https://dns.alicdn.com/dns-query
+    - https://dns.alidns.com/dns-query
     - https://doh.onedns.net/dns-query
     
   # 国内解析：专用于直连流量与中国大陆域名的低延迟加密查询 (DoH)
   nameserver:
-    - https://dns.alicdn.com/dns-query
+    - https://dns.alidns.com/dns-query
     - https://doh.onedns.net/dns-query
 
   # 对部分域名使用单独的 DNS 服务器
@@ -390,18 +390,18 @@ proxy-groups:
       - cn-ml
 
 rules:
-  - PROTOCOL,QUIC,REJECT                       # 拦截所有基于 UDP 的 QUIC 协议 (强迫客户端降级到 TCP 走代理，防止某些 ISP 严重阻断 UDP)
+  - DOMAIN,dns.alidns.com,DIRECT
+  - DOMAIN,doh.onedns.net,DIRECT
+  - DOMAIN,dns.google,Proxy
+  - DOMAIN,doh.opendns.com,Proxy
 
+  - PROTOCOL,QUIC,REJECT                       # 拦截所有基于 UDP 的 QUIC 协议 (强迫客户端降级到 TCP 走代理，防止某些 ISP 严重阻断 UDP)
   - PROTOCOL,STUN,REJECT                       # 拦截 WebRTC 穿透嗅探协议 (防止因 NAT 探测导致浏览器在代理状态下意外泄露国内真实物理 IP)
 
   - RULE-SET,private,DIRECT                    # 内网、局域网及私有服务控制
-  
   - RULE-SET,adrules,REJECT                    # 广告、追踪及隐私窃取流量净化
-  
   - RULE-SET,proxy,Proxy                       # 国际通用代理与被墙网站分流控制
-
   - RULE-SET,cn,ChinaRouter                    # 大陆本土域名与直连列表分流控制
-    
   - RULE-SET,cncidr,ChinaRouter #,no-resolve     # 大陆本土物理 IP 路由段分流控制,添加 no-resolve 以避免触发 DNS 解析。
   
 #  - GEOIP,CN,ChinaRouter                       # 地理位置防线 (真实 IP 模式的终极护盾)，未被上述云端规则捕获的残留大陆本地流量，通过内核解析物理 IP 并进行底层地理位置匹配，强制并入 ChinaRouter 组

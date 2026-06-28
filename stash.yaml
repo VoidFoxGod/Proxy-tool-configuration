@@ -234,15 +234,19 @@ dns:
     - 52.80.66.66
     - 2400:3200::1
     - 2400:7fc0:849e:200::4
+    - system
     
   # 国内解析：专用于直连流量与中国大陆域名的低延迟加密查询 (DoH)
   nameserver:
     - https://dns.alidns.com/dns-query
+    - https://doh.onedns.net/dns-query
+    - system
 
   # 对部分域名使用单独的 DNS 服务器
   nameserver-policy:
     'geosite:cn':
       - https://dns.alidns.com/dns-query
+      - https://doh.onedns.net/dns-query
       
   # 海外解析：专用于代理/海外域名的无污染全加密安全查询 (DoH)
   fallback:

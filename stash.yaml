@@ -60,7 +60,7 @@ dns:
   listen: 0.0.0.0:53            # 本地 DNS 服务监听端口
   ipv6: true                    # 开启 DNS AAAA 记录解析
 
-  #follow-rule: true             # 开启后，DNS 流量将遵循规则集和策略组
+  follow-rule: false           # DNS 查询不跟随 rules/策略组；所有上游 DNS 均由当前网络直接连接
   use-hosts: true               # 查询 hosts 并返回 IP 记录
   #skip-cert-verify: false      # TLS 握手时是否忽略证书验证    （ 如果设置为 true ，即，跳过证书验证，用来解决部分兼容性问题 ）
 
@@ -209,30 +209,52 @@ dns:
     - 'xbox.*.*.microsoft.com'
     - 'xbox.*.microsoft.com'
     - WORKGROUP
-    
-  # 预解析：用于 bootstrap 启动以及解析本地/远程加密 DNS (DoH/DoT) 本身域名的基础服务器
+
+  
+  # 引导 DNS（Bootstrap）：
+  # 仅用于解析下方 DoH 服务器域名，例如 dns.alidns.com、dns.google。
+  # 这里保留原配置中的 IPv4、IPv6 地址，不参与国内外网站的最终分流判断。
   default-nameserver:
     - 223.5.5.5
     - 52.80.66.66
     - 2400:3200::1
     - 2400:7fc0:849e:200::4
-    
-  # 国内解析：专用于直连流量与中国大陆域名的低延迟加密查询 (DoH)
+
+  # 默认/国内 DNS：保留原来的阿里 DoH 与 OneDNS DoH。
+  # 未命中 nameserver-policy 的域名，默认先由这一组解析。
   nameserver:
     - https://dns.alidns.com/dns-query
     - https://doh.onedns.net/dns-query
-      
-  # 海外解析：专用于代理/海外域名的无污染全加密安全查询 (DoH)
+
+  # 海外备用 DNS：保留原来的 Google DoH 与 OpenDNS DoH。
+  # fallback 不是代理规则；它只提供另一组 DNS 解析结果。
   fallback:
     - https://dns.google/dns-query
     - https://doh.opendns.com/dns-query
-      
-  # 拦截与重定向机制：防止国内 DNS 污染的核心屏障
+
+  # 按域名类别指定 DNS：
+  # 这里只决定“由哪组 DNS 解析”，不会替代 rules 中的 RULE-SET。
+  # 你的 proxy-domain、cn-domain、proxy-ip、cn-ip 等规则集仍负责决定流量走 Proxy、ChinaRouter 或 DIRECT。
+  nameserver-policy:
+    # 中国大陆域名使用原来的阿里 DoH、OneDNS DoH。
+    'geosite:cn':
+      - https://dns.alidns.com/dns-query
+      - https://doh.onedns.net/dns-query
+
+    # 非中国大陆域名使用原来的 Google DoH、OpenDNS DoH。
+    'geosite:geolocation-!cn':
+      - https://dns.google/dns-query
+      - https://doh.opendns.com/dns-query
+
+  # fallback 的结果筛选逻辑：保留原配置。
+  # 对没有被 nameserver-policy 明确覆盖，或需要进行异常结果判断的查询，继续作为兜底机制。
   fallback-filter:
     geoip: true
-    geoip-code: CN            # 过滤逻辑：若 nameserver 解析回来的 IP 不在中国大陆，则强制抛弃，改用 fallback 解析结果
-    ipcidr:                   # 过滤境外 DNS 常见的假 IP 污染段
-      - 0.0.0.0/8           
+    geoip-code: CN            # nameserver 返回非中国大陆 IP 时，优先采用 fallback 的解析结果
+
+    # 命中以下保留、私有、测试或 Fake-IP 网段时，视为异常结果并改用 fallback。
+    ipcidr:
+      - 0.0.0.0/8
       - 10.0.0.0/8
       - 100.64.0.0/10
       - 127.0.0.0/8
@@ -248,6 +270,8 @@ dns:
       - 224.0.0.0/4
       - 240.0.0.0/4
       - 255.255.255.255/32
+
+    # 这些域名继续强制使用 fallback 组，沿用原配置。
     domain:
       - '+.google.com'
       - '+.facebook.com'

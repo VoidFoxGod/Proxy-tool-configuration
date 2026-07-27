@@ -256,7 +256,7 @@ dns:
       - '+.googlevideo.com'
 
 profile                           :                   # 其他首选项
-  tracing                         : true              # 启用数据跟踪面板
+  tracing                         : false             # 暂时关闭数据跟踪面板，降低 Network Extension 内存占用
   store-selected                  : true              # 储存 API 对策略组的选择，以供下次启动时使用
   store-fake-ip                   : true              # 储存 fakeip 映射表，域名再次发生连接时，使用原有映射地址
 
@@ -398,12 +398,6 @@ proxy-groups:
       - cn-ml
 
 rules:
-  # DNS 服务器自身的连接分流，避免 DoH 查询被错误路由
-  - DOMAIN,dns.alidns.com,DIRECT                 # 阿里公共 DNS 直接连接
-  - DOMAIN,doh.onedns.net,DIRECT                 # OneDNS 直接连接
-  - DOMAIN,dns.google,Proxy                      # Google DNS 通过海外代理连接
-  - DOMAIN,doh.opendns.com,Proxy                 # OpenDNS 通过海外代理连接
-
   - PROTOCOL,QUIC,REJECT                         # 拦截所有基于 UDP 的 QUIC 协议（强迫客户端降级到 TCP 走代理，防止某些 ISP 严重阻断 UDP）
   - PROTOCOL,STUN,REJECT                         # 拦截 WebRTC 穿透嗅探协议（防止因 NAT 探测导致浏览器在代理状态下意外泄露国内真实物理 IP）
 

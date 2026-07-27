@@ -226,12 +226,6 @@ dns:
     - https://dns.alidns.com/dns-query
     - https://doh.onedns.net/dns-query
 
-  # 海外备用 DNS：保留原来的 Google DoH 与 OpenDNS DoH。
-  # fallback 不是代理规则；它只提供另一组 DNS 解析结果。
-  fallback:
-    - https://dns.google/dns-query
-    - https://doh.opendns.com/dns-query
-
   # 按域名类别指定 DNS：
   # 这里只决定“由哪组 DNS 解析”，不会替代 rules 中的 RULE-SET。
   # 你的 proxy-domain、cn-domain、proxy-ip、cn-ip 等规则集仍负责决定流量走 Proxy、ChinaRouter 或 DIRECT。
@@ -348,14 +342,6 @@ rule-providers:
     url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/ipcidr/adrules.list"
     interval: 86400           # 每 24 小时自动更新一次规则集
 
-  # 广告规则中无法归入 domain / ipcidr 的剩余特殊规则
-  adrules-classical:
-    type: http
-    behavior: classical      # 使用 classical 类规则集，承载剩余的完整规则类型
-    format: text              # 使用 text 格式的规则集
-    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/classical/adrules.list"
-    interval: 86400           # 每 24 小时自动更新一次规则集
-
   # 大陆本土域名与直连列表：域名规则集
   cn-domain:
     type: http
@@ -432,7 +418,6 @@ rules:
   # 广告、追踪及隐私窃取流量净化
   - RULE-SET,adrules-domain,REJECT               # 拦截广告及追踪域名
   - RULE-SET,adrules-ip,REJECT,no-resolve         # 拦截广告及追踪 IP 网段，添加 no-resolve 以避免触发 DNS 解析
-  - RULE-SET,adrules-classical,REJECT            # 拦截无法归入 domain / ipcidr 的剩余广告特殊规则
 
   # 国际通用代理与被墙网站分流控制
   - RULE-SET,proxy-domain,Proxy                  # 国际通用代理与被墙网站域名分流控制

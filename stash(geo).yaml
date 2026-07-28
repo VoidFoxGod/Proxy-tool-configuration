@@ -1,0 +1,374 @@
+mixed-port: 7890             # 混合代理端口 (HTTP/SOCKS5 共用)
+allow-lan: true              # 允许局域网设备连接
+mode: rule                   # 运行模式：规则分流 (Rule)
+log-level: info              # 日志输出级别
+ipv6: true                   # 全局开启 IPv6 流量接管与路由
+external-controller: '0.0.0.0:9090' # 外部控制 API 端口
+
+geodata-mode                      : false                                               # 更改 geoip 文件类型 （true为 dat，此项有默认值 false为mmdb）
+geodata-loader                    : memconservative                                     # GEO 文件加载模式 :  standard：标准加载器  \  memconservative：专为内存受限 (小内存) 设备优化的加载器 (默认值)
+geo-auto-update                   : true                                                # 自动更新GeoIP数据库
+geo-update-interval               : 24                                                  # 更新GeoIP数据库的 时间间隔（小时）
+geox-url                          :                                                     # 更新GeoIP数据库的 链接
+  geoip                           : 'https://raw.githubusercontent.com/Loyalsoldier/geoip/release/geoip.dat'
+  geosite                         : 'https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat'
+  mmdb                            : 'https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-Country.mmdb'
+  asn                             : 'https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-ASN.mmdb'
+
+ntp:
+  enable: true                                                # 是否同步至系统时间
+  write-to-system: false     
+  server: 'time.apple.com'         
+  benchmark-url: 'https://www.apple.com/library/test/success.html'
+  benchmark-timeout: 5 
+  port: 123 
+
+tun:                                                         # 配置：TUN 核心层接管，彻底杜绝 WebRTC 和全局流量泄露
+  enable: true 
+  auto-detect-interface: true                                # 自动检测出口网卡
+  auto-route: true 
+  stack: system                                              # 配置TUN使用系统级核心
+  dns-hijack: [ 'any:53' ]                                   # 强制将本地所有 53 端口 DNS 请求劫持给 Stash 内置 DNS 处理
+
+dns:
+  enable: true
+  listen: 0.0.0.0:53            # 本地 DNS 服务监听端口
+  ipv6: true                    # 开启 DNS AAAA 记录解析
+
+  #follow-rule: false           # DNS 查询不跟随 rules/策略组；所有上游 DNS 均由当前网络直接连接
+  #use-hosts: true              # 查询 hosts 并返回 IP 记录
+  #skip-cert-verify: false      # TLS 握手时是否忽略证书验证    （ 如果设置为 true ，即，跳过证书验证，用来解决部分兼容性问题 ）
+
+  enhanced-mode: fake-ip        # 核心技术：Fake-IP 模式 (本地直接返回虚假 IP，海外域名通过代理隧道加密至远端解析，底层杜绝 DNS 泄露)
+  fake-ip-range: 198.18.0.1/16  # 虚假本地 IP 分配池
+
+  # 虚假 IP 过滤器：强制指定域名跳过 Fake-IP 分配，直接返回真实物理 IP
+  fake-ip-filter:
+    - '+.10099.com.cn'
+    - '+.126.net'
+    - '+.3gppnetwork.org'
+    - '+.battle.net'
+    - '+.battlenet.com.cn'
+    - '+.blzstatic.cn'
+    - '+.bogon'
+    - '+.cdn.nintendo.net'
+    - '+.cmbchina.com'
+    - '+.cmbimg.com'
+    - '+.cmpassport.com'
+    - '+.direct'
+    - '+.dynv6.net'
+    - '+.example'
+    - '+.ff14.sdo.com'
+    - '+.ffxiv.com'
+    - '+.finalfantasyxiv.com'
+    - '+.gcloudcs.com'
+    - '+.gcloudsdk.com'
+    - '+.home.arpa'
+    - '+.icitymobile.mobi'
+    - '+.internal'
+    - '+.invalid'
+    - '+.jegotrip.com.cn'
+    - '+.kk-rays.com'
+    - '+.kuwo.cn'
+    - '+.lan'
+    - '+.linksys.com'
+    - '+.linksyssmartwifi.com'
+    - '+.local'
+    - '+.localdomain'
+    - '+.localhost'
+    - '+.m2m'
+    - '+.market.xiaomi.com'
+    - '+.mcdn.bilivideo.cn'
+    - '+.media.dssott.com'
+    - '+.microdone.cn'
+    - '+.msftconnecttest.com'
+    - '+.msftncsi.com'
+    - '+.music.163.com'
+    - '+.music.migu.cn'
+    - '+.n0808.com'
+    - '+.nflxvideo.net'
+    - '+.nip.io'
+    - '+.ntp.org.cn'
+    - '+.oray.com'
+    - '+.orayimg.com'
+    - '+.pingan.com.cn'
+    - '+.pool.ntp.org'
+    - '+.qq.com'
+    - '+.router.asus.com'
+    - '+.sandai.net'
+    - '+.square-enix.com'
+    - '+.srv.nintendo.net'
+    - '+.sslip.io'
+    - '+.steamcontent.com'
+    - '+.stun.*.*'
+    - '+.stun.*.*.*'
+    - '+.stun.*.*.*.*'
+    - '+.stun.*.*.*.*.*'
+    - '+.tencent.com'
+    - '+.test'
+    - '+.time.edu.cn'
+    - '+.ts.net'
+    - '+.turn.twilio.com'
+    - '+.uu.163.com'
+    - '+.wargaming.net'
+    - '+.wggames.cn'
+    - '+.wosms.cn'
+    - '+.wotgame.cn'
+    - '+.wowsgame.cn'
+    - '+.xboxlive.com'
+    - '+.xiami.com'
+    - 'DC._msDCS.*.*'
+    - 'GC._msDCS.*.*'
+    # - 'Mijia Cloud'  # 已注释：此行非合规域名格式，防止 Stash 报错
+    - 'PDC._msDCS.*.*'
+    - 'adguardteam.github.io'
+    - 'adrules.top'
+    - 'anti-ad.net'
+    - 'api-jooxtt.sanook.com'
+    - 'api.joox.com'
+    - 'app.yinxiang.com'
+    - 'cable.auth.com'
+    - 'detectportal.firefox.com'
+    - 'enrichgw.10010.com'
+    - 'ff.dorado.sdo.com'
+    - 'heartbeat.belkin.com'
+    - 'hmrz.wo.cn'
+    - 'id.mail.wo.cn'
+    - 'id6.me'
+    - 'injections.adguard.org'
+    - 'joox.com'
+    - 'lens.l.google.com'
+    - 'local.adguard.org'
+    - 'mdn.open.wo.cn'
+    - 'mesu.apple.com'
+    - 'music.taihe.com'
+    - 'musicapi.taihe.com'
+    - 'na.b.g-tun.com'
+    - 'network-test.debian.org'
+    - 'nishub1.10010.com'
+    - 'ntp.*.com'
+    - 'ntp1.*.com'
+    - 'ntp2.*.com'
+    - 'ntp3.*.com'
+    - 'ntp4.*.com'
+    - 'ntp5.*.com'
+    - 'ntp6.*.com'
+    - 'ntp7.*.com'
+    - 'open.e.189.cn'
+    - 'opencloud.wostore.cn'
+    - 'proxy.golang.org'
+    - 'ps.res.netease.com'
+    - 'resolver1.opendns.com'
+    - 'shark007.net'
+    - 'songsearch.kugou.com'
+    - 'static.adtidy.org'
+    - 'swcdn.apple.com'
+    - 'swdist.apple.com'
+    - 'swdownload.apple.com'
+    - 'swquery.apple.com'
+    - 'swscan.apple.com'
+    - 'time-ios.apple.com'
+    - 'time-macos.apple.com'
+    - 'time.*.apple.com'
+    - 'time.*.com'
+    - 'time.*.edu.cn'
+    - 'time.*.gov'
+    - 'time1.*.com'
+    - 'time2.*.com'
+    - 'time3.*.com'
+    - 'time4.*.com'
+    - 'time5.*.com'
+    - 'time6.*.com'
+    - 'time7.*.com'
+    - 'trackercdn.kugou.com'
+    - 'xbox.*.*.microsoft.com'
+    - 'xbox.*.microsoft.com'
+    - WORKGROUP
+
+  
+  # 引导 DNS（Bootstrap）：
+  # 仅用于解析下方 DoH 服务器域名，例如 dns.alidns.com、dns.google。
+  # 这里保留原配置中的 IPv4、IPv6 地址，不参与国内外网站的最终分流判断。
+  default-nameserver:
+    - 223.5.5.5
+    - 52.80.66.66
+    - 2400:3200::1
+    - 2400:7fc0:849e:200::4
+
+  # 默认/国内 DNS：保留原来的阿里 DoH 与 OneDNS DoH。
+  # 未命中 nameserver-policy 的域名，默认先由这一组解析。
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.onedns.net/dns-query
+
+  # 按域名类别指定 DNS：
+  # 这里只决定“由哪组 DNS 解析”，不会替代 rules 中的 RULE-SET。
+  # 你的 proxy-domain、cn-domain、proxy-ip、cn-ip 等规则集仍负责决定流量走 Proxy、ChinaRouter 或 DIRECT。
+  nameserver-policy:
+    # 中国大陆域名使用原来的阿里 DoH、OneDNS DoH。
+    'geosite:cn':
+      - https://dns.alidns.com/dns-query
+      - https://doh.onedns.net/dns-query
+
+    # 非中国大陆域名使用原来的 Google DoH、OpenDNS DoH。
+    'geosite:geolocation-!cn':
+      - https://dns.google/dns-query
+      - https://doh.opendns.com/dns-query
+
+profile                           :                   # 其他首选项
+  tracing                         : false             # 暂时关闭数据跟踪面板，降低 Network Extension 内存占用
+  store-selected                  : true              # 储存 API 对策略组的选择，以供下次启动时使用
+  store-fake-ip                   : true              # 储存 fakeip 映射表，域名再次发生连接时，使用原有映射地址
+
+proxy-providers:
+  fq:
+    type: http
+    url: "http://sub.store/download/collection/fq?target=Stash"     # 👈 替换为您代理海外的主翻墙订阅链接
+    interval: 86400
+    path: ./providers/fq.yaml
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 600
+
+  fq-ml:
+    type: http
+    url: "http://sub.store/download/collection/cloudmusic?target=Stash"  # 👈 替换为您的国外免流/特定订阅链接
+    interval: 86400
+    path: ./providers/fq_ml.yaml
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 600
+
+  cn-ml:
+    type: http
+    url: "http://sub.store/download/collection/cloudmusic-cn?target=Stash"  # 👈 替换为您的国内免流/回国特定订阅链接
+    interval: 86400
+    path: ./providers/cn_ml.yaml
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 600
+
+rule-providers:
+  # 国际通用代理与被墙网站：域名规则集
+  proxy-domain:
+    type: http
+    behavior: domain          # 使用 domain 类规则集，可以使域名匹配更高效
+    format: text              # 使用 text 格式的规则集
+    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/domain/proxy.list"
+    interval: 86400           # 每 24 小时自动更新一次规则集
+
+  # 国际通用代理与被墙网站：IPv4 / IPv6 路由网段规则集
+  proxy-ip:
+    type: http
+    behavior: ipcidr          # 使用 ipcidr 类规则集，适用于纯 IP 路由网段匹配
+    format: text              # 使用 text 格式的规则集
+    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/ipcidr/proxy.list"
+    interval: 86400           # 每 24 小时自动更新一次规则集
+
+  # 广告、追踪及隐私窃取流量：域名规则集
+  adrules-domain:
+    type: http
+    behavior: domain          # 使用 domain 类规则集，可以使域名匹配更高效
+    format: text              # 使用 text 格式的规则集
+    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/domain/adrules.list"
+    interval: 86400           # 每 24 小时自动更新一次规则集
+
+  # 广告、追踪及隐私窃取流量：IPv4 / IPv6 路由网段规则集
+  adrules-ip:
+    type: http
+    behavior: ipcidr          # 使用 ipcidr 类规则集，适用于纯 IP 路由网段匹配
+    format: text              # 使用 text 格式的规则集
+    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/ipcidr/adrules.list"
+    interval: 86400           # 每 24 小时自动更新一次规则集
+
+  # 大陆本土域名与直连列表：域名规则集
+  cn-domain:
+    type: http
+    behavior: domain          # 使用 domain 类规则集，可以使域名匹配更高效
+    format: text              # 使用 text 格式的规则集
+    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/domain/cn.list"
+    interval: 86400           # 每 24 小时自动更新一次规则集
+
+  # 大陆本土物理 IP 路由段：IPv4 / IPv6 路由网段规则集
+  cn-ip:
+    type: http
+    behavior: ipcidr          # 纯 IP 路由网段匹配算法
+    format: text              # 使用 text 格式的规则集
+    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/ipcidr/cn.list"
+    interval: 86400           # 每 24 小时自动更新一次规则集
+
+  # 内网、局域网及私有服务：域名规则集
+  private-domain:
+    type: http
+    behavior: domain          # 使用 domain 类规则集，可以使域名匹配更高效
+    format: text              # 使用 text 格式的规则集
+    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/domain/private.list"
+    interval: 86400           # 每 24 小时自动更新一次规则集
+
+  # 内网、局域网及私有服务：IPv4 / IPv6 私有网段规则集
+  private-ip:
+    type: http
+    behavior: ipcidr          # 使用 ipcidr 类规则集，适用于纯 IP 路由网段匹配
+    format: text              # 使用 text 格式的规则集
+    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/ipcidr/private.list"
+    interval: 86400           # 每 24 小时自动更新一次规则集
+
+proxy-groups:
+  # 海外主控代理策略组 (挂载 fq 节点源，嵌套子策略 fq ml)
+  - name: Proxy
+    type: select
+    proxies:
+      - DIRECT
+      - fq ml
+    use:
+      - fq
+
+  # 国外特定免流策略组 (挂载 fq-ml 节点源)
+  - name: fq ml
+    type: select
+    proxies:
+      - DIRECT
+    use:
+      - fq-ml
+
+  # 大陆本地流量路由控制组 (控制国内流量直连或内网免流切换)
+  - name: ChinaRouter
+    type: select
+    proxies:
+      - DIRECT
+      - cn ml
+  
+  # 国内特定免流策略组 (挂载 cn-ml 节点源)
+  - name: cn ml
+    type: select
+    proxies:
+      - DIRECT
+    use:
+      - cn-ml
+
+rules:
+  - PROTOCOL,QUIC,REJECT                         # 拦截所有基于 UDP 的 QUIC 协议（强迫客户端降级到 TCP 走代理，防止某些 ISP 严重阻断 UDP）
+  - PROTOCOL,STUN,REJECT                         # 拦截 WebRTC 穿透嗅探协议（防止因 NAT 探测导致浏览器在代理状态下意外泄露国内真实物理 IP）
+
+  # 内网、局域网及私有服务控制
+  - RULE-SET,private-domain,DIRECT               # 内网、局域网及私有服务域名直接连接
+  - RULE-SET,private-ip,DIRECT,no-resolve         # 内网及私有 IP 网段直接连接，添加 no-resolve 以避免触发 DNS 解析
+
+  # 广告、追踪及隐私窃取流量净化
+  - RULE-SET,adrules-domain,REJECT               # 拦截广告及追踪域名
+  - RULE-SET,adrules-ip,REJECT,no-resolve         # 拦截广告及追踪 IP 网段，添加 no-resolve 以避免触发 DNS 解析
+
+  # 国际通用代理与被墙网站分流控制
+  - RULE-SET,proxy-domain,Proxy                  # 国际通用代理与被墙网站域名分流控制
+  - RULE-SET,proxy-ip,Proxy,no-resolve            # 国际通用代理与被墙网站 IP 网段分流控制，添加 no-resolve 以避免触发 DNS 解析
+
+  # 大陆本土域名与物理 IP 路由段分流控制
+  - RULE-SET,cn-domain,ChinaRouter               # 大陆本土域名与直连列表分流控制
+  - RULE-SET,cn-ip,ChinaRouter,no-resolve         # 大陆本土物理 IP 路由段分流控制，添加 no-resolve 以避免触发 DNS 解析
+
+  - GEOIP,CN,ChinaRouter                         # 地理位置防线（真实 IP 模式的终极护盾）：未被上述云端规则捕获的残留大陆本地流量，通过内核解析物理 IP 并进行底层地理位置匹配，强制并入 ChinaRouter 组
+
+  - MATCH,Proxy                                  # 全局漏网之鱼：对未命中任何规则的边缘流量进行安全兜底

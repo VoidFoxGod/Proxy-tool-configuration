@@ -4,6 +4,32 @@ mode: rule                   # 运行模式：规则分流 (Rule)
 log-level: info              # 日志输出级别
 external-controller: '0.0.0.0:9090' # 外部控制 API 端口
 
+hosts:
+  dns.google:
+    - 8.8.8.8
+    - 8.8.4.4
+    - "2001:4860:4860::8888"
+    - "2001:4860:4860::8844"
+
+  dns.quad9.net:
+    - 9.9.9.9
+    - 149.112.112.112
+    - "2620:fe::fe"
+    - "2620:fe::9"
+
+proxy-hosts:
+  dns.google:
+    - 8.8.8.8
+    - 8.8.4.4
+    - "2001:4860:4860::8888"
+    - "2001:4860:4860::8844"
+
+  dns.quad9.net:
+    - 9.9.9.9
+    - 149.112.112.112
+    - "2620:fe::fe"
+    - "2620:fe::9"
+
 dns:
   follow-rule: true             # true：DNS 查询按代理规则转发；false：DNS 查询直接出站，不经过代理规则（默认）
   #skip-cert-verify: false      # TLS 握手时是否忽略证书验证    （ 如果设置为 true ，即，跳过证书验证，用来解决部分兼容性问题 ）
@@ -175,10 +201,10 @@ dns:
       - https://dns.alidns.com/dns-query
       - https://doh.onedns.net/dns-query
 
-    # 非中国大陆域名使用原来的 Google DoH、OpenDNS DoH。
+    # 非中国大陆域名使用原来的 Google DoH、Quad9 DoH。
     'geosite:geolocation-!cn':
       - https://dns.google/dns-query
-      - https://doh.opendns.com/dns-query
+      - https://dns.quad9.net/dns-query
 
 proxy-providers:
   provider-fq:
@@ -248,7 +274,7 @@ rules:
   - DOMAIN,dns.alidns.com,DIRECT                 # 阿里 DoH 直接连接
   - DOMAIN,doh.onedns.net,DIRECT                 # OneDNS DoH 直接连接
   - DOMAIN,dns.google,Proxy                      # Google DoH 通过海外代理连接
-  - DOMAIN,doh.opendns.com,Proxy                 # OpenDNS DoH 通过海外代理连接
+  - DOMAIN,dns.quad9.net,Proxy                 # OpenDNS DoH 通过海外代理连接
   
   # 协议拦截
   - PROTOCOL,QUIC,REJECT                         # 拦截 QUIC，通常促使支持回退的应用改用 TCP/TLS

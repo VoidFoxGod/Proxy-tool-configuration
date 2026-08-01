@@ -2,29 +2,11 @@ mixed-port: 7890             # 混合代理端口 (HTTP/SOCKS5 共用)
 allow-lan: true              # 允许局域网设备连接
 mode: rule                   # 运行模式：规则分流 (Rule)
 log-level: info              # 日志输出级别
-ipv6: true                   # 全局开启 IPv6 流量接管与路由
 external-controller: '0.0.0.0:9090' # 外部控制 API 端口
 
-geodata-mode                      : false                                               # 更改 geoip 文件类型 （true为 dat，此项有默认值 false为mmdb）
-geodata-loader                    : memconservative                                     # GEO 文件加载模式 :  standard：标准加载器  \  memconservative：专为内存受限 (小内存) 设备优化的加载器 (默认值)
-geo-auto-update                   : true                                                # 自动更新GeoIP数据库
-geo-update-interval               : 24                                                  # 更新GeoIP数据库的 时间间隔（小时）
-geox-url                          :                                                     # 更新GeoIP数据库的 链接
-  geoip                           : 'https://raw.githubusercontent.com/Loyalsoldier/geoip/release/geoip.dat'
-  geosite                         : 'https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat'
-  mmdb                            : 'https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-Country.mmdb'
-  asn                             : 'https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-ASN.mmdb'
-
 dns:
-  enable: true
-  listen: 0.0.0.0:53            # 本地 DNS 服务监听端口
-  ipv6: true                    # 开启 DNS AAAA 记录解析
-
   follow-rule: true             # true：DNS 查询按代理规则转发；false：DNS 查询直接出站，不经过代理规则（默认）
   #skip-cert-verify: false      # TLS 握手时是否忽略证书验证    （ 如果设置为 true ，即，跳过证书验证，用来解决部分兼容性问题 ）
-
-  enhanced-mode: fake-ip        # 核心技术：Fake-IP 模式 (本地直接返回虚假 IP，海外域名通过代理隧道加密至远端解析，底层杜绝 DNS 泄露)
-  fake-ip-range: 198.18.0.1/16  # 虚假本地 IP 分配池
 
   # 虚假 IP 过滤器：强制指定域名跳过 Fake-IP 分配，直接返回真实物理 IP
   fake-ip-filter:
@@ -198,41 +180,27 @@ dns:
       - https://dns.google/dns-query
       - https://doh.opendns.com/dns-query
 
-profile                           :                   # 其他首选项
-  tracing                         : false             # 暂时关闭数据跟踪面板，降低 Network Extension 内存占用
-  store-selected                  : true              # 储存 API 对策略组的选择，以供下次启动时使用
-  store-fake-ip                   : true              # 储存 fakeip 映射表，域名再次发生连接时，使用原有映射地址
-
 proxy-providers:
   provider-fq:
-    type: http
     url: "http://sub.store/download/collection/fq?target=Stash"     # 👈 替换为您代理海外的主翻墙订阅链接
     interval: 86400
     path: ./providers/fq.yaml
-    health-check:
-      enable: true
-      url: http://www.gstatic.com/generate_204
-      interval: 600
+    benchmark-url: http://www.gstatic.com/generate_204
+    benchmark-timeout: 600
 
   provider-fq-ml:
-    type: http
     url: "http://sub.store/download/collection/cloudmusic?target=Stash"  # 👈 替换为您的国外免流/特定订阅链接
     interval: 86400
     path: ./providers/fq_ml.yaml
-    health-check:
-      enable: true
-      url: http://www.gstatic.com/generate_204
-      interval: 600
+    benchmark-url: http://www.gstatic.com/generate_204
+    benchmark-timeout: 600
 
   provider-cn-ml:
-    type: http
     url: "http://sub.store/download/collection/cloudmusic-cn?target=Stash"  # 👈 替换为您的国内免流/回国特定订阅链接
     interval: 86400
     path: ./providers/cn_ml.yaml
-    health-check:
-      enable: true
-      url: http://www.gstatic.com/generate_204
-      interval: 600
+    benchmark-url: http://www.gstatic.com/generate_204
+    benchmark-timeout: 600
 
 
 proxy-groups:
@@ -277,7 +245,7 @@ proxy-groups:
 
 rules:
   # 协议拦截
-  - PROTOCOL,QUIC,REJECT                         # 拦截 QUIC，强制应用回落到 TCP
+  - PROTOCOL,QUIC,REJECT                         # 拦截 QUIC，通常促使支持回退的应用改用 TCP/TLS
   - PROTOCOL,STUN,REJECT                         # 拦截 STUN，降低 WebRTC 暴露真实出口 IP 的风险
 
   # 内网与局域网：优先直连

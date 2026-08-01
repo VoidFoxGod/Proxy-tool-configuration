@@ -244,6 +244,12 @@ proxy-groups:
       - provider-cn-ml
 
 rules:
+  # DNS 上游连接分流
+  - DOMAIN,dns.alidns.com,DIRECT                 # 阿里 DoH 直接连接
+  - DOMAIN,doh.onedns.net,DIRECT                 # OneDNS DoH 直接连接
+  - DOMAIN,dns.google,Proxy                      # Google DoH 通过海外代理连接
+  - DOMAIN,doh.opendns.com,Proxy                 # OpenDNS DoH 通过海外代理连接
+  
   # 协议拦截
   - PROTOCOL,QUIC,REJECT                         # 拦截 QUIC，通常促使支持回退的应用改用 TCP/TLS
   - PROTOCOL,STUN,REJECT                         # 拦截 STUN，降低 WebRTC 暴露真实出口 IP 的风险

@@ -202,8 +202,7 @@ dns:
     - https://doh.onedns.net/dns-query
 
   # 按域名类别指定 DNS：
-  # 这里只决定“由哪组 DNS 解析”，不会替代 rules 中的 RULE-SET。
-  # 你的 proxy-domain、cn-domain、proxy-ip、cn-ip 等规则集仍负责决定流量走 Proxy、ChinaRouter 或 DIRECT。
+  # 这里只决定“由哪组 DNS 解析”；实际流量由下方 GEOSITE / GEOIP 规则决定走 Proxy、ChinaRouter 或 DIRECT。
   nameserver-policy:
     # 中国大陆域名使用原来的阿里 DoH、OneDNS DoH。
     'geosite:cn':
@@ -251,70 +250,6 @@ proxy-providers:
       url: http://www.gstatic.com/generate_204
       interval: 600
 
-rule-providers:
-  # 国际通用代理与被墙网站：域名规则集
-  proxy-domain:
-    type: http
-    behavior: domain          # 使用 domain 类规则集，可以使域名匹配更高效
-    format: text              # 使用 text 格式的规则集
-    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/domain/proxy.list"
-    interval: 86400           # 每 24 小时自动更新一次规则集
-
-  # 国际通用代理与被墙网站：IPv4 / IPv6 路由网段规则集
-  proxy-ip:
-    type: http
-    behavior: ipcidr          # 使用 ipcidr 类规则集，适用于纯 IP 路由网段匹配
-    format: text              # 使用 text 格式的规则集
-    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/ipcidr/proxy.list"
-    interval: 86400           # 每 24 小时自动更新一次规则集
-
-  # 广告、追踪及隐私窃取流量：域名规则集
-  adrules-domain:
-    type: http
-    behavior: domain          # 使用 domain 类规则集，可以使域名匹配更高效
-    format: text              # 使用 text 格式的规则集
-    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/domain/adrules.list"
-    interval: 86400           # 每 24 小时自动更新一次规则集
-
-  # 广告、追踪及隐私窃取流量：IPv4 / IPv6 路由网段规则集
-  adrules-ip:
-    type: http
-    behavior: ipcidr          # 使用 ipcidr 类规则集，适用于纯 IP 路由网段匹配
-    format: text              # 使用 text 格式的规则集
-    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/ipcidr/adrules.list"
-    interval: 86400           # 每 24 小时自动更新一次规则集
-
-  # 大陆本土域名与直连列表：域名规则集
-  cn-domain:
-    type: http
-    behavior: domain          # 使用 domain 类规则集，可以使域名匹配更高效
-    format: text              # 使用 text 格式的规则集
-    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/domain/cn.list"
-    interval: 86400           # 每 24 小时自动更新一次规则集
-
-  # 大陆本土物理 IP 路由段：IPv4 / IPv6 路由网段规则集
-  cn-ip:
-    type: http
-    behavior: ipcidr          # 纯 IP 路由网段匹配算法
-    format: text              # 使用 text 格式的规则集
-    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/ipcidr/cn.list"
-    interval: 86400           # 每 24 小时自动更新一次规则集
-
-  # 内网、局域网及私有服务：域名规则集
-  private-domain:
-    type: http
-    behavior: domain          # 使用 domain 类规则集，可以使域名匹配更高效
-    format: text              # 使用 text 格式的规则集
-    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/domain/private.list"
-    interval: 86400           # 每 24 小时自动更新一次规则集
-
-  # 内网、局域网及私有服务：IPv4 / IPv6 私有网段规则集
-  private-ip:
-    type: http
-    behavior: ipcidr          # 使用 ipcidr 类规则集，适用于纯 IP 路由网段匹配
-    format: text              # 使用 text 格式的规则集
-    url: "https://raw.githubusercontent.com/QuixoticHeart/rule-set/refs/heads/ruleset/stash/ipcidr/private.list"
-    interval: 86400           # 每 24 小时自动更新一次规则集
 
 proxy-groups:
   # 海外主控代理策略组 (挂载 fq 节点源，嵌套子策略 fq ml)
@@ -350,25 +285,30 @@ proxy-groups:
       - cn-ml
 
 rules:
-  - PROTOCOL,QUIC,REJECT                         # 拦截所有基于 UDP 的 QUIC 协议（强迫客户端降级到 TCP 走代理，防止某些 ISP 严重阻断 UDP）
-  - PROTOCOL,STUN,REJECT                         # 拦截 WebRTC 穿透嗅探协议（防止因 NAT 探测导致浏览器在代理状态下意外泄露国内真实物理 IP）
+  # 协议拦截
+  - PROTOCOL,QUIC,REJECT                         # 拦截 QUIC，强制应用回落到 TCP
+  - PROTOCOL,STUN,REJECT                         # 拦截 STUN，降低 WebRTC 暴露真实出口 IP 的风险
 
-  # 内网、局域网及私有服务控制
-  - RULE-SET,private-domain,DIRECT               # 内网、局域网及私有服务域名直接连接
-  - RULE-SET,private-ip,DIRECT,no-resolve         # 内网及私有 IP 网段直接连接，添加 no-resolve 以避免触发 DNS 解析
+  # 内网与局域网：优先直连
+  - GEOSITE,private,DIRECT                       # 私有域名、本地域名直接连接
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve       # IPv4 回环地址
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve        # IPv4 私有地址
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve     # IPv4 私有地址
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve    # IPv4 私有地址
+  - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve    # IPv4 链路本地地址
+  - IP-CIDR6,::1/128,DIRECT,no-resolve           # IPv6 回环地址
+  - IP-CIDR6,fc00::/7,DIRECT,no-resolve          # IPv6 唯一本地地址
+  - IP-CIDR6,fe80::/10,DIRECT,no-resolve         # IPv6 链路本地地址
 
-  # 广告、追踪及隐私窃取流量净化
-  - RULE-SET,adrules-domain,REJECT               # 拦截广告及追踪域名
-  - RULE-SET,adrules-ip,REJECT,no-resolve         # 拦截广告及追踪 IP 网段，添加 no-resolve 以避免触发 DNS 解析
+  # 广告与追踪域名
+  - GEOSITE,category-ads-all,REJECT              # 拦截 domain-list-community 中的广告域名
 
-  # 国际通用代理与被墙网站分流控制
-  - RULE-SET,proxy-domain,Proxy                  # 国际通用代理与被墙网站域名分流控制
-  - RULE-SET,proxy-ip,Proxy,no-resolve            # 国际通用代理与被墙网站 IP 网段分流控制，添加 no-resolve 以避免触发 DNS 解析
+  # 中国大陆流量
+  - GEOSITE,cn,ChinaRouter                       # 中国大陆域名交给 ChinaRouter
+  - GEOIP,CN,ChinaRouter,no-resolve              # 中国大陆 IP 交给 ChinaRouter
 
-  # 大陆本土域名与物理 IP 路由段分流控制
-  - RULE-SET,cn-domain,ChinaRouter               # 大陆本土域名与直连列表分流控制
-  - RULE-SET,cn-ip,ChinaRouter,no-resolve         # 大陆本土物理 IP 路由段分流控制，添加 no-resolve 以避免触发 DNS 解析
+  # 非中国大陆域名
+  - GEOSITE,geolocation-!cn,Proxy                # 非中国大陆域名交给 Proxy
 
-  - GEOIP,CN,ChinaRouter                         # 地理位置防线（真实 IP 模式的终极护盾）：未被上述云端规则捕获的残留大陆本地流量，通过内核解析物理 IP 并进行底层地理位置匹配，强制并入 ChinaRouter 组
-
-  - MATCH,Proxy                                  # 全局漏网之鱼：对未命中任何规则的边缘流量进行安全兜底
+  # 兜底
+  - MATCH,Proxy                                  # 其余未命中流量默认走 Proxy

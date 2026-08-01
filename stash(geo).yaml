@@ -175,7 +175,7 @@ dns:
       - https://dns.alidns.com/dns-query
       - https://doh.onedns.net/dns-query
 
-    # 非中国大陆域名使用原来的 Google DoH、Quad9 DoH。
+    # 非中国大陆域名使用原来的 Google DoH、OpenDNS DoH。
     'geosite:geolocation-!cn':
       - https://dns.google/dns-query
       - https://doh.opendns.com/dns-query

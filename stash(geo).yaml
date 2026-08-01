@@ -35,8 +35,7 @@ dns:
   listen: 0.0.0.0:53            # 本地 DNS 服务监听端口
   ipv6: true                    # 开启 DNS AAAA 记录解析
 
-  #follow-rule: false           # DNS 查询不跟随 rules/策略组；所有上游 DNS 均由当前网络直接连接
-  #use-hosts: true              # 查询 hosts 并返回 IP 记录
+  follow-rule: true             # true：DNS 查询按代理规则转发；false：DNS 查询直接出站，不经过代理规则（默认）
   #skip-cert-verify: false      # TLS 握手时是否忽略证书验证    （ 如果设置为 true ，即，跳过证书验证，用来解决部分兼容性问题 ）
 
   enhanced-mode: fake-ip        # 核心技术：Fake-IP 模式 (本地直接返回虚假 IP，海外域名通过代理隧道加密至远端解析，底层杜绝 DNS 泄露)

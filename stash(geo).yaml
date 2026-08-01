@@ -15,21 +15,6 @@ geox-url                          :                                             
   mmdb                            : 'https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-Country.mmdb'
   asn                             : 'https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-ASN.mmdb'
 
-ntp:
-  enable: true                                                # 是否同步至系统时间
-  write-to-system: false     
-  server: 'time.apple.com'         
-  benchmark-url: 'https://www.apple.com/library/test/success.html'
-  benchmark-timeout: 5 
-  port: 123 
-
-tun:                                                         # 配置：TUN 核心层接管，彻底杜绝 WebRTC 和全局流量泄露
-  enable: true 
-  auto-detect-interface: true                                # 自动检测出口网卡
-  auto-route: true 
-  stack: system                                              # 配置TUN使用系统级核心
-  dns-hijack: [ 'any:53' ]                                   # 强制将本地所有 53 端口 DNS 请求劫持给 Stash 内置 DNS 处理
-
 dns:
   enable: true
   listen: 0.0.0.0:53            # 本地 DNS 服务监听端口

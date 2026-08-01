@@ -186,21 +186,21 @@ proxy-providers:
     interval: 86400
     path: ./providers/fq.yaml
     benchmark-url: http://www.gstatic.com/generate_204
-    benchmark-timeout: 600
+    benchmark-timeout: 5
 
   provider-fq-ml:
     url: "http://sub.store/download/collection/cloudmusic?target=Stash"  # 👈 替换为您的国外免流/特定订阅链接
     interval: 86400
     path: ./providers/fq_ml.yaml
     benchmark-url: http://www.gstatic.com/generate_204
-    benchmark-timeout: 600
+    benchmark-timeout: 5
 
   provider-cn-ml:
     url: "http://sub.store/download/collection/cloudmusic-cn?target=Stash"  # 👈 替换为您的国内免流/回国特定订阅链接
     interval: 86400
     path: ./providers/cn_ml.yaml
     benchmark-url: http://www.gstatic.com/generate_204
-    benchmark-timeout: 600
+    benchmark-timeout: 5
 
 
 proxy-groups:

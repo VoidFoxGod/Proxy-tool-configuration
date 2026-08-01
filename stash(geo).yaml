@@ -252,12 +252,19 @@ proxy-providers:
 
 
 proxy-groups:
-  # 海外主控代理策略组 (挂载 fq 节点源，嵌套子策略 fq ml)
+  # 海外主控代理策略组 (嵌套子策略 fq，fq ml)
   - name: Proxy
     type: select
     proxies:
       - DIRECT
+      - fq
       - fq ml
+
+  # 国外特定翻墙策略组（挂载 fq 节点源）
+  - name: fq
+    type: select
+    proxies:
+      - DIRECT
     use:
       - fq
 

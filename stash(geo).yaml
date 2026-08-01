@@ -220,7 +220,7 @@ profile                           :                   # 其他首选项
   store-fake-ip                   : true              # 储存 fakeip 映射表，域名再次发生连接时，使用原有映射地址
 
 proxy-providers:
-  fq:
+  provider-fq:
     type: http
     url: "http://sub.store/download/collection/fq?target=Stash"     # 👈 替换为您代理海外的主翻墙订阅链接
     interval: 86400
@@ -230,7 +230,7 @@ proxy-providers:
       url: http://www.gstatic.com/generate_204
       interval: 600
 
-  fq-ml:
+  provider-fq-ml:
     type: http
     url: "http://sub.store/download/collection/cloudmusic?target=Stash"  # 👈 替换为您的国外免流/特定订阅链接
     interval: 86400
@@ -240,7 +240,7 @@ proxy-providers:
       url: http://www.gstatic.com/generate_204
       interval: 600
 
-  cn-ml:
+  provider-cn-ml:
     type: http
     url: "http://sub.store/download/collection/cloudmusic-cn?target=Stash"  # 👈 替换为您的国内免流/回国特定订阅链接
     interval: 86400
@@ -266,7 +266,7 @@ proxy-groups:
     proxies:
       - DIRECT
     use:
-      - fq
+      - provider-fq
 
   # 国外特定免流策略组 (挂载 fq-ml 节点源)
   - name: fq ml
@@ -274,7 +274,7 @@ proxy-groups:
     proxies:
       - DIRECT
     use:
-      - fq-ml
+      - provider-fq-ml
 
   # 大陆本地流量路由控制组 (控制国内流量直连或内网免流切换)
   - name: ChinaRouter
@@ -289,7 +289,7 @@ proxy-groups:
     proxies:
       - DIRECT
     use:
-      - cn-ml
+      - provider-cn-ml
 
 rules:
   # 协议拦截

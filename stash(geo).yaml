@@ -34,7 +34,7 @@ dns:
   follow-rule: true             # true：DNS 查询按代理规则转发；false：DNS 查询直接出站，不经过代理规则（默认）
   #skip-cert-verify: false      # TLS 握手时是否忽略证书验证    （ 如果设置为 true ，即，跳过证书验证，用来解决部分兼容性问题 ）
 
-  # 虚假 IP 过滤器：强制指定域名跳过 Fake-IP 分配，直接返回真实物理 IP
+  # 跳过 Fake-IP 映射，返回域名的真实 DNS 解析结果
   fake-ip-filter:
     - '+.10099.com.cn'
     - '+.126.net'
@@ -274,19 +274,19 @@ rules:
   - DOMAIN,dns.alidns.com,DIRECT                 # 阿里 DoH 直接连接
   - DOMAIN,doh.onedns.net,DIRECT                 # OneDNS DoH 直接连接
   - DOMAIN,dns.google,Proxy                      # Google DoH 通过海外代理连接
-  - DOMAIN,dns.quad9.net,Proxy                 # OpenDNS DoH 通过海外代理连接
-  
+  - DOMAIN,dns.quad9.net,Proxy                   # Quad9 DoH 通过海外代理连接
+
   # 协议拦截
   - PROTOCOL,QUIC,REJECT                         # 拦截 QUIC，通常促使支持回退的应用改用 TCP/TLS
   - PROTOCOL,STUN,REJECT                         # 拦截 STUN，降低 WebRTC 暴露真实出口 IP 的风险
 
   # 内网与局域网：优先直连
   - GEOSITE,private,DIRECT                       # 私有域名、本地域名直接连接
-  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve       # IPv4 回环地址
-  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve        # IPv4 私有地址
-  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve     # IPv4 私有地址
-  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve    # IPv4 私有地址
-  - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve    # IPv4 链路本地地址
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve        # IPv4 回环地址
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve         # IPv4 私有地址
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve      # IPv4 私有地址
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve     # IPv4 私有地址
+  - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve     # IPv4 链路本地地址
   - IP-CIDR6,::1/128,DIRECT,no-resolve           # IPv6 回环地址
   - IP-CIDR6,fc00::/7,DIRECT,no-resolve          # IPv6 唯一本地地址
   - IP-CIDR6,fe80::/10,DIRECT,no-resolve         # IPv6 链路本地地址

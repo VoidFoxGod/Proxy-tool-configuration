@@ -5,7 +5,7 @@ log-level: info              # 日志输出级别
 external-controller: '0.0.0.0:9090' # 外部控制 API 端口
 
 dns:
-  follow-rule: true             # true：DNS 查询按代理规则转发；false：DNS 查询直接出站，不经过代理规则（默认）
+  #follow-rule: true             # true：DNS 查询按代理规则转发；false：DNS 查询直接出站，不经过代理规则（默认）
   #skip-cert-verify: false      # TLS 握手时是否忽略证书验证    （ 如果设置为 true ，即，跳过证书验证，用来解决部分兼容性问题 ）
 
   # 跳过 Fake-IP 映射，返回域名的真实 DNS 解析结果

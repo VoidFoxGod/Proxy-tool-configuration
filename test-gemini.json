@@ -169,7 +169,7 @@
       "type": "selector",
       "tag": "fq",
       "outbounds": [
-        "{all}"
+        "direct"
       ],
       "interrupt_exist_connections": true
     },
@@ -177,7 +177,7 @@
       "type": "selector",
       "tag": "fq ml",
       "outbounds": [
-        "{all}"
+        "direct"
       ],
       "interrupt_exist_connections": true
     },
@@ -221,7 +221,7 @@
       "type": "selector",
       "tag": "cn ml",
       "outbounds": [
-        "{all}"
+        "direct"
       ],
       "interrupt_exist_connections": true
     }

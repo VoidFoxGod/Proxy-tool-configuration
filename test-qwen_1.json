@@ -199,7 +199,7 @@
         "tag": "adrules",
         "type": "remote",
         "format": "binary",
-        "url": "https://hk.gh-proxy.com/https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version4/adrules.srs",
+        "url": "https://gcore.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/ads.srs",
         "http_client": "hc-direct",
         "update_interval": "1d"
       },
@@ -207,7 +207,7 @@
         "tag": "private",
         "type": "remote",
         "format": "binary",
-        "url": "https://hk.gh-proxy.com/https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version4/private.srs",
+        "url": "https://gcore.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/private.srs",
         "http_client": "hc-direct",
         "update_interval": "1d"
       },
@@ -215,7 +215,7 @@
         "tag": "proxy_domain",
         "type": "remote",
         "format": "binary",
-        "url": "https://hk.gh-proxy.com/https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version4/proxy.srs",
+        "url": "https://gcore.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/proxy.srs",
         "http_client": "hc-direct",
         "update_interval": "1d"
       },
@@ -223,7 +223,7 @@
         "tag": "cn_domain",
         "type": "remote",
         "format": "binary",
-        "url": "https://hk.gh-proxy.com/https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version4/cn.srs",
+        "url": "https://gcore.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/cn.srs",
         "http_client": "hc-direct",
         "update_interval": "1d"
       },
@@ -231,7 +231,7 @@
         "tag": "cn_ip",
         "type": "remote",
         "format": "binary",
-        "url": "https://hk.gh-proxy.com/https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version4/cncidr.srs",
+        "url": "https://gcore.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/cnip.srs",
         "http_client": "hc-direct",
         "update_interval": "1d"
       }

@@ -1,0 +1,295 @@
+{
+  "log": {
+    "level": "info",
+    "timestamp": true
+  },
+  "http_clients": [
+    {
+      "tag": "hc-direct",
+      "detour": "DIRECT"
+    }
+  ],
+  "dns": {
+    "servers": [
+      {
+        "tag": "dns-direct-ali-4",
+        "type": "udp",
+        "server": "223.5.5.5"
+      },
+      {
+        "tag": "dns-direct-ali-6",
+        "type": "udp",
+        "server": "2400:3200::1"
+      },
+      {
+        "tag": "dns-direct-ali-doh",
+        "type": "https",
+        "server": "dns.alidns.com",
+        "path": "/dns-query",
+        "domain_resolver": "dns-direct-one-4"
+      },
+      {
+        "tag": "dns-direct-one-4",
+        "type": "udp",
+        "server": "52.80.66.66"
+      },
+      {
+        "tag": "dns-direct-one-6",
+        "type": "udp",
+        "server": "2400:7fc0:849e:200::4"
+      },
+      {
+        "tag": "dns-direct-one-doh",
+        "type": "https",
+        "server": "doh.onedns.net",
+        "path": "/dns-query",
+        "domain_resolver": "dns-direct-one-4"
+      },
+      {
+        "tag": "dns-proxy-google-4",
+        "type": "udp",
+        "server": "8.8.8.8",
+        "detour": "fq"
+      },
+      {
+        "tag": "dns-proxy-google-6",
+        "type": "udp",
+        "server": "2001:4860:4860::8888",
+        "detour": "fq"
+      },
+      {
+        "tag": "dns-proxy-google-doh",
+        "type": "https",
+        "server": "8.8.8.8",
+        "path": "/dns-query",
+        "tls": {
+          "server_name": "dns.google"
+        },
+        "detour": "fq"
+      },
+      {
+        "tag": "dns-proxy-quad9-4",
+        "type": "udp",
+        "server": "9.9.9.11",
+        "detour": "fq"
+      },
+      {
+        "tag": "dns-proxy-quad9-6",
+        "type": "udp",
+        "server": "2620:fe::11",
+        "detour": "fq"
+      },
+      {
+        "tag": "dns-proxy-quad9-doh",
+        "type": "https",
+        "server": "9.9.9.11",
+        "path": "/dns-query",
+        "tls": {
+          "server_name": "dns11.quad9.net"
+        },
+        "detour": "fq"
+      }
+    ],
+    "rules": [
+      {
+        "clash_mode": "direct",
+        "action": "route",
+        "server": "dns-direct-one-doh"
+      },
+      {
+        "clash_mode": "global",
+        "action": "route",
+        "server": "dns-proxy-quad9-doh"
+      },
+      {
+        "rule_set": "cn_domain",
+        "query_type": ["A"],
+        "action": "route",
+        "server": "dns-direct-ali-4"
+      },
+      {
+        "rule_set": "cn_domain",
+        "query_type": ["AAAA"],
+        "action": "route",
+        "server": "dns-direct-ali-6"
+      },
+      {
+        "rule_set": "cn_domain",
+        "action": "route",
+        "server": "dns-direct-ali-doh"
+      },
+      {
+        "query_type": ["A"],
+        "action": "route",
+        "server": "dns-proxy-google-4"
+      },
+      {
+        "query_type": ["AAAA"],
+        "action": "route",
+        "server": "dns-proxy-google-6"
+      }
+    ],
+    "final": "dns-proxy-google-doh"
+  },
+  "route": {
+    "default_domain_resolver": {
+      "server": "dns-direct-one-4"
+    },
+    "default_http_client": "hc-direct",
+    "rules": [
+      {
+        "action": "sniff",
+        "sniffer": ["http", "tls", "quic", "stun", "dns"],
+        "timeout": "500ms"
+      },
+      {
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          { "port": 53 },
+          { "protocol": "dns" }
+        ],
+        "action": "hijack-dns"
+      },
+      {
+        "clash_mode": "direct",
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "clash_mode": "global",
+        "action": "route",
+        "outbound": "Proxy"
+      },
+      {
+        "rule_set": "private",
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "ip_is_private": true,
+        "action": "route",
+        "outbound": "DIRECT"
+      },
+      {
+        "rule_set": "adrules",
+        "action": "reject"
+      },
+      {
+        "protocol": "quic",
+        "action": "reject"
+      },
+      {
+        "protocol": "stun",
+        "action": "reject"
+      },
+      {
+        "rule_set": "proxy_domain",
+        "action": "route",
+        "outbound": "Proxy"
+      },
+      {
+        "rule_set": ["cn_domain", "cn_ip"],
+        "action": "route",
+        "outbound": "ChinaRouter"
+      }
+    ],
+    "rule_set": [
+      {
+        "tag": "adrules",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://hk.gh-proxy.com/https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version4/adrules.srs",
+        "http_client": "hc-direct",
+        "update_interval": "1d"
+      },
+      {
+        "tag": "private",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://hk.gh-proxy.com/https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version4/private.srs",
+        "http_client": "hc-direct",
+        "update_interval": "1d"
+      },
+      {
+        "tag": "proxy_domain",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://hk.gh-proxy.com/https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version4/proxy.srs",
+        "http_client": "hc-direct",
+        "update_interval": "1d"
+      },
+      {
+        "tag": "cn_domain",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://hk.gh-proxy.com/https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version4/cn.srs",
+        "http_client": "hc-direct",
+        "update_interval": "1d"
+      },
+      {
+        "tag": "cn_ip",
+        "type": "remote",
+        "format": "binary",
+        "url": "https://hk.gh-proxy.com/https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version4/cncidr.srs",
+        "http_client": "hc-direct",
+        "update_interval": "1d"
+      }
+    ],
+    "final": "Proxy",
+    "auto_detect_interface": true
+  },
+  "outbounds": [
+    {
+      "tag": "Proxy",
+      "type": "selector",
+      "outbounds": ["DIRECT", "fq", "fq ml"]
+    },
+    {
+      "tag": "fq",
+      "type": "selector",
+      "outbounds": ["DIRECT"]
+    },
+    {
+      "tag": "fq ml",
+      "type": "selector",
+      "outbounds": ["DIRECT"]
+    },
+    {
+      "tag": "ChinaRouter",
+      "type": "selector",
+      "outbounds": ["DIRECT", "cn ml"]
+    },
+    {
+      "tag": "cn ml",
+      "type": "selector",
+      "outbounds": ["DIRECT"]
+    },
+    {
+      "tag": "DIRECT",
+      "type": "direct"
+    }
+  ],
+  "inbounds": [
+    {
+      "type": "tun",
+      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
+      "auto_route": true,
+      "strict_route": true,
+      "dns_mode": "hijack"
+    },
+    {
+      "type": "mixed",
+      "listen": "127.0.0.1",
+      "listen_port": 7890
+    }
+  ],
+  "experimental": {
+    "clash_api": {
+      "external_controller": "127.0.0.1:9090"
+    },
+    "cache_file": {
+      "enabled": true
+    }
+  }
+}

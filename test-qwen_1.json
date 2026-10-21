@@ -5,8 +5,7 @@
   },
   "http_clients": [
     {
-      "tag": "hc-direct",
-      "detour": "DIRECT"
+      "tag": "hc-direct"
     }
   ],
   "dns": {
